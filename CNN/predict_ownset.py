@@ -11,6 +11,24 @@ import tensorflow as tf
 import sys
 from PIL import Image
 
+def save_images(origImage,origMask,predMask,path,name):
+	# initialize our figure
+	figure, ax = plt.subplots(nrows=1, ncols=3, figsize=(10, 10))
+	# plot the original image, its mask, and the predicted mask
+	ax[0].imshow(origImage)
+	ax[1].imshow(origMask)
+	ax[2].imshow(predMask)
+	# set the titles of the subplots
+	ax[0].set_title("Image")
+	ax[1].set_title("Original Mask")
+	ax[2].set_title("Predicted Mask")
+	plt.title("Result for %s"%name)
+	# set the layout of the figure and display it
+	figure.tight_layout()
+	plt.savefig(path)
+	plt.close()
+	
+
 def prepare_plot(origImage, origMask, predMask):
 	# initialize our figure
 	figure, ax = plt.subplots(nrows=1, ncols=3, figsize=(10, 10))
@@ -76,8 +94,11 @@ def make_predictions(model, imagePath):
 		if gettrace():
 			prepare_plot(orig, gtMask, predMask)
 
-		return accuracy
+		save_images(orig,gtMask,predMask,r"C:\Users\Alfred\Desktop\Importante\Licenta\Visual Studio\CNN\output\Images"+"\%s"%path.name[0:22],path.name[0:18])
 
+		return accuracy
+		
+		
 
 
 # load the image path
@@ -99,6 +120,7 @@ for path in os.scandir(imagePaths):
 	count += 1
 	# print the accuracy
 	print("Accuracy for {} is: {:.4f}, predicted {:.0f} pixels out of {:.0f}".format(path.name,acc,acc*12544/100,12544))
+
 
 # print the mean accuracy
 print("The mean accuracy of the dataset is: {:.4f}".format(mean_acc/count))

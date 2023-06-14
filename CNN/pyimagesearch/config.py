@@ -24,9 +24,9 @@ NUM_CLASSES = 1
 NUM_LEVELS = 3
 
 # initialize learning rate, number of epochs to train for, and the batch size
-INIT_LR = 0.001 # era 0.0005 inainte
-NUM_EPOCHS = 40 # era 50 inainte
-BATCH_SIZE = 64 # era 1 inainte
+INIT_LR = 0.0005 # era 0.0005 inainte
+NUM_EPOCHS = 50 # era 50 inainte
+BATCH_SIZE = 1 # era 1 inainte
 
 # define the input image dimensions
 INPUT_IMAGE_WIDTH = 112

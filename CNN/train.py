@@ -68,6 +68,7 @@ if __name__ == '__main__':
 	# loop over epochs
 	print("[INFO] training the network...")
 	startTime = time.time()
+	torch.backends.cudnn.benchmark = True
 	for e in tqdm(range(config.NUM_EPOCHS)):
 		# set the model in training mode
 		unet.train()

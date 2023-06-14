@@ -57,15 +57,17 @@ def make_predictions(model, imagePath):
 		predMask = torch.sigmoid(predMask)
 		predMask = predMask.cpu().numpy()
 
+		# filter out the weak predictions and convert them to integers
+		predMask = (predMask > config.THRESHOLD) * 255
+		predMask = predMask.astype(np.uint8)
+
 		# Convert tensors to numpy arrays
 		imPred = torch.tensor(predMask)
 		imLab = torch.tensor(gtMask)
 
 		accuracy = 100 * np.array(torch.sum(imPred == imLab))/12544
 
-		# filter out the weak predictions and convert them to integers
-		predMask = (predMask > config.THRESHOLD) * 255
-		predMask = predMask.astype(np.uint8)
+		
 		
 		# check if the program is running in debug mode ( for plotting purposes)
 		gettrace = getattr(sys, 'gettrace', None)
@@ -80,7 +82,7 @@ def make_predictions(model, imagePath):
 
 # load the image path
 print("[INFO] Loading up test image paths...")
-imagePaths = r"C:\Users\Alfred\Desktop\Importante\Licenta\Dataset\Test\Raw"
+imagePaths = r"C:\Users\Alfred\Desktop\Importante\Licenta\TestSet\Test\Raw"
 
 # load our model from disk and flash it to the current device
 print("[INFO] Loading up model...")
@@ -96,7 +98,7 @@ for path in os.scandir(imagePaths):
 	mean_acc += acc
 	count += 1
 	# print the accuracy
-	print("Accuracy for {} is: {:.4f}".format(path.name,acc))
+	print("Accuracy for {} is: {:.4f}, predicted {:.0f} pixels out of {:.0f}".format(path.name,acc,acc*12544/100,12544))
 
 # print the mean accuracy
 print("The mean accuracy of the dataset is: {:.4f}".format(mean_acc/count))

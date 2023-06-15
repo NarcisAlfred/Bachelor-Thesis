@@ -17,13 +17,14 @@ class Block(Module):
 		self.conv1 = Conv2d(inChannels, outChannels, 3)
 		self.relu1 = ReLU()
 		self.conv2 = Conv2d(outChannels, outChannels, 3)
+		self.relu2 = ReLU()
 
 	def forward(self, x):
-		# apply CONV => RELU => CONV => RELU block to the inputs and return it
-		return self.conv2(self.relu1(self.conv1(x)))
+		# apply CONV => RELU => CONV => RELU => CONV block to the inputs and return it
+		return self.relu2(self.conv2(self.relu1(self.conv1(x))))
 
 class Encoder(Module):
-	def __init__(self, channels=(3, 16, 32, 64)):
+	def __init__(self, channels=(3, 16, 32)):
 		super().__init__()
 		# store the encoder blocks and maxpooling layer
 		self.encBlocks = ModuleList([Block(channels[i], channels[i + 1]) for i in range(len(channels) - 1)])
@@ -32,52 +33,51 @@ class Encoder(Module):
 	def forward(self, x):
 		# initialize an empty list to store the intermediate outputs
 		blockOutputs = []
+
 		# loop through the encoder blocks
 		for block in self.encBlocks:
 			# pass the inputs through the current encoder block, store the outputs, and then apply maxpooling on the output
 			x = block(x)
 			blockOutputs.append(x)
 			x = self.pool(x)
+
 		# return the list containing the intermediate outputs
 		return blockOutputs
 
 class Decoder(Module):
-	def __init__(self, channels=(64, 32, 16)):
+	def __init__(self, channels=(32, 16)):
 		super().__init__()
-		# initialize the number of channels, upsampler blocks, and
-		# decoder blocks
+		# initialize the number of channels, upsampler blocks, and decoder blocks
 		self.channels = channels
-		self.upconvs = ModuleList(
-			[ConvTranspose2d(channels[i], channels[i + 1], 2, 2)
-			 	for i in range(len(channels) - 1)])
-		self.dec_blocks = ModuleList(
-			[Block(channels[i], channels[i + 1])
-			 	for i in range(len(channels) - 1)])
+		self.upconvs = ModuleList([ConvTranspose2d(channels[i], channels[i + 1], 2, 2) for i in range(len(channels) - 1)])
+		self.dec_blocks = ModuleList([Block(channels[i], channels[i + 1]) for i in range(len(channels) - 1)])
+
 	def forward(self, x, encFeatures):
 		# loop through the number of channels
 		for i in range(len(self.channels) - 1):
 			# pass the inputs through the upsampler blocks
 			x = self.upconvs[i](x)
-			# crop the current features from the encoder blocks,
-			# concatenate them with the current upsampled features,
-			# and pass the concatenated output through the current
-			# decoder block
+
+			# crop the current features from the encoder blocks, concatenate them with the current upsampled features, 
+			# and pass the concatenated output through the current decoder block
 			encFeat = self.crop(encFeatures[i], x)
 			x = torch.cat([x, encFeat], dim=1)
 			x = self.dec_blocks[i](x)
+
 		# return the final decoder output
 		return x
+
 	def crop(self, encFeatures, x):
-		# grab the dimensions of the inputs, and crop the encoder
-		# features to match the dimensions
+		# grab the dimensions of the inputs, and crop the encoder features to match the dimensions
 		(_, _, H, W) = x.shape
 		encFeatures = CenterCrop([H, W])(encFeatures)
+
 		# return the cropped features
 		return encFeatures
 
 class UNet(Module):
-	def __init__(self, encChannels=(3, 16, 32, 64),
-		 decChannels=(64, 32, 16),
+	def __init__(self, encChannels=(3, 16, 32),
+		 decChannels=(32, 16),
 		 nbClasses=1, retainDim=True,
 		 outSize=(config.INPUT_IMAGE_HEIGHT,  config.INPUT_IMAGE_WIDTH)):
 

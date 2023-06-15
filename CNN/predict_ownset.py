@@ -9,7 +9,11 @@ import cv2
 import os
 import tensorflow as tf
 import sys
+import torch.nn.functional as F
+from torchvision.transforms.functional import to_pil_image, to_tensor
+from PIL import ImageFilter
 from PIL import Image
+
 
 def save_images(origImage,origMask,predMask,path,name):
 	# initialize our figure
@@ -22,7 +26,6 @@ def save_images(origImage,origMask,predMask,path,name):
 	ax[0].set_title("Image")
 	ax[1].set_title("Original Mask")
 	ax[2].set_title("Predicted Mask")
-	plt.title("Result for %s"%name)
 	# set the layout of the figure and display it
 	figure.tight_layout()
 	plt.savefig(path)
@@ -79,12 +82,17 @@ def make_predictions(model, imagePath):
 		predMask = (predMask > config.THRESHOLD) * 255
 		predMask = predMask.astype(np.uint8)
 
-		# Convert tensors to numpy arrays
+		# Calculate accuracy
 		imPred = torch.tensor(predMask)
-		imLab = torch.tensor(gtMask)
+		imMask = torch.tensor(gtMask)
+		accuracy = 100 * np.array(torch.sum(imPred == imMask))/12544
 
-		accuracy = 100 * np.array(torch.sum(imPred == imLab))/12544
+		# Calculate IoU
+		intersection = torch.sum(torch.mul(imPred, imMask))
+		union = torch.sum(imPred) + torch.sum(imMask) - intersection
+		iou = intersection / union
 
+		print("Accuracy for {} is: {:.4f}, IoU is: {:.3f}, predicted {:.0f} pixels out of {:.0f}".format(imagePath.name,accuracy,iou.item(),accuracy*12544/100,12544))
 		
 		
 		# check if the program is running in debug mode ( for plotting purposes)
@@ -118,10 +126,7 @@ for path in os.scandir(imagePaths):
 	acc = make_predictions(unet, path)
 	mean_acc += acc
 	count += 1
-	# print the accuracy
-	print("Accuracy for {} is: {:.4f}, predicted {:.0f} pixels out of {:.0f}".format(path.name,acc,acc*12544/100,12544))
-
-
+	
 # print the mean accuracy
 print("The mean accuracy of the dataset is: {:.4f}".format(mean_acc/count))
 

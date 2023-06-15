@@ -8,6 +8,7 @@ from torch.nn import BCEWithLogitsLoss
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from torchsummary import summary
 from torchvision import transforms
 from imutils import paths
 from tqdm import tqdm

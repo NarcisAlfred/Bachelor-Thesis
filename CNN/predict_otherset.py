@@ -56,6 +56,6 @@ print("[INFO] load up model...")
 unet = torch.load(config.MODEL_PATH).to(config.DEVICE)
 
 # iterate over the randomly selected test image paths
-for path in os.scandir(r"C:\Users\Alfred\Desktop\Importante\Licenta\Dataset\Test\Raw"):
+for path in os.scandir(r"C:\Users\Alfred\Desktop\Importante\Licenta\FrameInregistrari\Train"):
 	# make predictions and visualize the results
 	make_predictions(unet, path.path)

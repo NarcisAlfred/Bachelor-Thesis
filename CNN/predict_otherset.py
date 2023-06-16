@@ -30,7 +30,7 @@ def make_predictions(model, imagePath):
 		image = image.astype("float32") / 255.0
 
 		# resize the image and make a copy of it for visualization
-		image = cv2.resize(image, (128, 128))
+		image = cv2.resize(image, (512, 512))
 		orig = image.copy()
 
 		# make the channel axis to be the leading one, add a batch dimension, create a PyTorch tensor, and flash it to the current device

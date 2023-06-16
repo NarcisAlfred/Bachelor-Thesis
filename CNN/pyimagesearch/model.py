@@ -24,7 +24,7 @@ class Block(Module):
 		return self.relu2(self.conv2(self.relu1(self.conv1(x))))
 
 class Encoder(Module):
-	def __init__(self, channels=(3, 16, 32)):
+	def __init__(self, channels=(3, 16, 32)): 
 		super().__init__()
 		# store the encoder blocks and maxpooling layer
 		self.encBlocks = ModuleList([Block(channels[i], channels[i + 1]) for i in range(len(channels) - 1)])

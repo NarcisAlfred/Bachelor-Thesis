@@ -58,7 +58,7 @@ def make_predictions(model, imagePath):
 		image = image.astype("float32") / 255.0
 
 		# resize the image and make a copy of it for visualization
-		image = cv2.resize(image,(112,112))
+		image = cv2.resize(image,(256,256))
 		orig = image.copy()
 
 		# find the filename and generate the path to ground truth mask
@@ -85,14 +85,14 @@ def make_predictions(model, imagePath):
 		# Calculate accuracy
 		imPred = torch.tensor(predMask)
 		imMask = torch.tensor(gtMask)
-		accuracy = 100 * np.array(torch.sum(imPred == imMask))/12544
+		accuracy = 100 * np.array(torch.sum(imPred == imMask))/65536
 
 		# Calculate IoU
 		intersection = torch.sum(torch.mul(imPred, imMask))
 		union = torch.sum(imPred) + torch.sum(imMask) - intersection
 		iou = intersection / union
 
-		print("Accuracy for {} is: {:.4f}, IoU is: {:.3f}, predicted {:.0f} pixels out of {:.0f}".format(imagePath.name,accuracy,iou.item(),accuracy*12544/100,12544))
+		print("Accuracy for {} is: {:.4f}, IoU is: {:.3f}, predicted {:.0f} pixels out of {:.0f}".format(imagePath.name,accuracy,iou.item(),accuracy*65536/100,65536))
 		
 		
 		# check if the program is running in debug mode ( for plotting purposes)

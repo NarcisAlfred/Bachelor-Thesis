@@ -35,8 +35,6 @@ if __name__ == '__main__':
 	# define transformations
 	transforms = transforms.Compose([
 		transforms.ToPILImage(),
-		#transforms.RandomHorizontalFlip(),  # Randomly flip the image horizontally
-		#transforms.RandomRotation(10), # Randomly rotate the image by a maximum of 10 degrees
 		transforms.Resize((config.INPUT_IMAGE_HEIGHT,config.INPUT_IMAGE_WIDTH)), # Resize the image
 		transforms.ToTensor() # Convert image to tensor
 		]) 

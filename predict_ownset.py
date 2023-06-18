@@ -83,6 +83,12 @@ def make_predictions(model, imagePath):
 		predMask = (predMask > config.THRESHOLD) * 255
 		predMask = predMask.astype(np.uint8)
 
+		predMask = cv2.medianBlur(predMask,5)
+
+
+		# save masks to a folder
+		cv2.imwrite(r"C:\Users\Alfred\Desktop\Importante\Licenta\Visual Studio\CNN\output\Predictions"+"\%s"%path.name[0:22],predMask)
+
 		# Calculate accuracy
 		imPred = torch.tensor(predMask)
 		imMask = torch.tensor(gtMask)
@@ -94,7 +100,7 @@ def make_predictions(model, imagePath):
 		iou = intersection / union
 
 		print("Accuracy for {} is: {:.4f}, IoU is: {:.3f}, predicted {:.0f} pixels out of {:.0f}".format(imagePath.name,accuracy,iou.item(),accuracy*pixel_total/100,pixel_total))
-		
+
 		
 		# check if the program is running in debug mode ( for plotting purposes)
 		gettrace = getattr(sys, 'gettrace', None)

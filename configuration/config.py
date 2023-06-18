@@ -28,11 +28,11 @@ INPUT_IMAGE_WIDTH = 256
 INPUT_IMAGE_HEIGHT = 256
 
 # define threshold to filter weak predictions
-THRESHOLD = 0.5
+THRESHOLD = 0.7
 
 # define the path to the base output directory
 BASE_OUTPUT = "output"
 
 # define the path to the output serialized model, model training, plot and testing image paths
 MODEL_PATH = os.path.join(BASE_OUTPUT, "UNet.pth")
-PLOT_PATH = os.path.sep.join([BASE_OUTPUT, "plot.png"])
+PLOT_PATH = os.path.sep.join([BASE_OUTPUT, "Loss_plot.png"])

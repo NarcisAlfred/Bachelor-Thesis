@@ -8,10 +8,10 @@ import tensorflow as tf
 import torch.nn.functional as F
 
 # check if the temporary folder exists
-if not os.path.exists(os.getcwd()+"\Application\Temp"):
-    os.mkdir(os.getcwd()+"\Application\Temp")
+if not os.path.exists(os.getcwd()+"\Temp"):
+    os.mkdir(os.getcwd()+"\Temp")
 
-temp_path = os.getcwd()+"\Application\Temp"
+temp_path = os.getcwd()+"\Temp"
 
 # set the device for processing
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -75,7 +75,6 @@ while True:
         # Select the AI Model
         case "bttnModel":
             model = gui.popup_get_file('Select your model',no_window=True) # Browse and select the model
-            unet = torch.load(model).to(DEVICE)
             window["labelModel"].Update(value = f'Current model used is: {model.split("/")[-1]}') # Display the name of the model
         
         # Add raw images to list
@@ -116,7 +115,6 @@ while True:
         case "listRaw":  
             try:
                 image_raw = values["folderRaw"]+"/%s"%values["listRaw"][0]
-                print(image_raw)
                 image_cv2 = cv2.imread(image_raw) # read the image
                 image_cv2 = cv2.resize(image_cv2, (128,128)) # resize image
                 cv2.imwrite(temp_path+"\%s"%values["listRaw"][0]+".png", image_cv2) # convert image to .png
@@ -146,7 +144,8 @@ while True:
                 gui.popup("Please select a model!") # Add a pop-up that the model has to be selected
             elif raw is None:
                 gui.popup("Please select an image!") # Add a pop-up that the image has to be selected
-            else
+            else:
+                unet = torch.load(model).to(DEVICE)
                 # set model to evaluation mode
                 try:
                     unet.eval()
@@ -161,6 +160,7 @@ while True:
                     image = image.astype("float32") / 255.0
                     
                     # make the channel axis to be the leading one, add a batch dimension, create a PyTorch tensor, and flash it to the current device
+                    image = cv2.resize(image,(256,256))
                     image = np.transpose(image, (2, 0, 1))
                     image = np.expand_dims(image, 0)
                     image = torch.from_numpy(image).to(DEVICE)
@@ -171,13 +171,16 @@ while True:
                     predMask = predMask.cpu().numpy()
 
 		            # filter out the weak predictions and convert them to integers
-                    predMask = (predMask > 0.5) * 255
+                    predMask = (predMask > 0.7) * 255
                     predMask = predMask.astype(np.uint8)
+
+                    # smothen the mask
+                    predMask = cv2.medianBlur(predMask,5)
                     
-                image_cv2 = cv2.resize(predMask, (128,128)) # resize image
-                # Save the prediction temporary
-                cv2.imwrite(temp_path+"\%s"%values["listRaw"][0]+"_predict.png", image_cv2) # convert image to .png
-                predict = temp_path+"\%s"%values["listRaw"][0]+"_predict.png"
+                    image_cv2 = cv2.resize(predMask, (128,128)) # resize the mask back
+                    # Save the prediction temporary
+                    cv2.imwrite(temp_path+"\%s"%values["listRaw"][0]+"_predict.png", image_cv2) # convert image to .png
+                    predict = temp_path+"\%s"%values["listRaw"][0]+"_predict.png"
 
                 # Update the predicted image
                 window["imagePredict"].Update(filename=predict)

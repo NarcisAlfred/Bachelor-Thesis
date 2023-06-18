@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{15213658-4f90-4289-a4fa-fcbadd621145}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>train.py</StartupFile>
+    <StartupFile>Neural Network\train.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -19,23 +19,26 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Application\Executable.py" />
     <Compile Include="Application\MainWindow.pyw" />
     <Compile Include="Other Scripts\BuildExcel.py" />
     <Compile Include="Other Scripts\Convert_mdt_to_jpg.py" />
     <Compile Include="Other Scripts\ExtractFrames.py" />
+    <Compile Include="Other Scripts\GetArea.py" />
     <Compile Include="Other Scripts\MoveFiles.py" />
+    <Compile Include="Other Scripts\Plot.py" />
     <Compile Include="Other Scripts\Segmentare_Adaptive_Thresholding.py" />
     <Compile Include="Other Scripts\Segmentare_Conturare.py" />
     <Compile Include="Other Scripts\Segmentare_Otsu_Binarization.py" />
     <Compile Include="Other Scripts\Segmentare_Simple_Thresholding.py" />
     <Compile Include="Other Scripts\Segmentare_UNet.py" />
-    <Compile Include="predict_ownset.py" />
-    <Compile Include="predict_dataset.py" />
-    <Compile Include="predict_otherset.py" />
+    <Compile Include="Neural Network\predict_ownset.py" />
+    <Compile Include="Neural Network\predict_dataset.py" />
+    <Compile Include="Neural Network\predict_otherset.py" />
     <Compile Include="configuration\config.py" />
     <Compile Include="configuration\dataset.py" />
     <Compile Include="configuration\model.py" />
-    <Compile Include="train.py" />
+    <Compile Include="Neural Network\train.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="dataset\train\Labeled\patient0001_2CH_ED_gt.jpg" />
@@ -1857,6 +1860,7 @@
     <Folder Include="dataset\train\Raw" />
     <Folder Include="configuration\" />
     <Folder Include="Application\" />
+    <Folder Include="Neural Network\" />
     <Folder Include="Other Scripts\" />
     <Folder Include="Other Scripts\.vs\" />
     <Folder Include="Other Scripts\.vs\Visual Studio\" />

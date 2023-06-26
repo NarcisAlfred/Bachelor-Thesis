@@ -49,7 +49,7 @@ class Decoder(Module):
 		super().__init__()
 		# initialize the number of channels, upsampler blocks, and decoder blocks
 		self.channels = channels
-		self.upconvs = ModuleList([ConvTranspose2d(channels[i], channels[i + 1], 2, 2) for i in range(len(channels) - 1)])
+		self.upconvs = ModuleList([ConvTranspose2d(channels[i], channels[i + 1], 2, 2) for i in range(len(channels)-1)])
 		self.dec_blocks = ModuleList([Block(channels[i], channels[i + 1]) for i in range(len(channels) - 1)])
 
 	def forward(self, x, encFeatures):

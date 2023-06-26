@@ -23,9 +23,9 @@ def save_images(origImage,origMask,predMask,path,name):
 	ax[1].imshow(origMask)
 	ax[2].imshow(predMask)
 	# set the titles of the subplots
-	ax[0].set_title("Image")
-	ax[1].set_title("Original Mask")
-	ax[2].set_title("Predicted Mask")
+	ax[0].set_title("Imagine")
+	ax[1].set_title("Masca originala")
+	ax[2].set_title("Masca prezisa")
 	# set the layout of the figure and display it
 	figure.tight_layout()
 	plt.savefig(path)
@@ -88,37 +88,36 @@ def make_predictions(model, imagePath):
 
 		# save masks to a folder
 		cv2.imwrite(r"C:\Users\Alfred\Desktop\Importante\Licenta\Visual Studio\CNN\output\Predictions"+"\%s"%path.name[0:22],predMask)
+		# Calculate IoU
+		intersection = np.logical_and(gtMask, predMask)
+		union = np.logical_or(gtMask, predMask)
+		iou = np.sum(intersection) / np.sum(union)
 
 		# Calculate accuracy
 		imPred = torch.tensor(predMask)
 		imMask = torch.tensor(gtMask)
 		accuracy = 100 * np.array(torch.sum(imPred == imMask))/(pixel_total)
 
-		# Calculate IoU
-		intersection = torch.sum(torch.mul(imPred, imMask))
-		union = torch.sum(imPred) + torch.sum(imMask) - intersection
-		iou = intersection / union
-
-		print("Accuracy for {} is: {:.4f}, IoU is: {:.3f}, predicted {:.0f} pixels out of {:.0f}".format(imagePath.name,accuracy,iou.item(),accuracy*pixel_total/100,pixel_total))
+		print("Accuracy for {} is: {:.4f}%, IoU is: {:.2f}%, predicted {:.0f} pixels out of {:.0f}".format(imagePath.name,accuracy,100*iou,accuracy*pixel_total/100,pixel_total))
 
 		
 		# check if the program is running in debug mode ( for plotting purposes)
 		gettrace = getattr(sys, 'gettrace', None)
 
 		# prepare a plot for visualization
-		if gettrace():
-			prepare_plot(orig, gtMask, predMask)
+		#if gettrace():
+			#prepare_plot(orig, gtMask, predMask)
 
 		save_images(orig,gtMask,predMask,r"C:\Users\Alfred\Desktop\Importante\Licenta\Visual Studio\CNN\output\Images"+"\%s"%path.name[0:22],path.name[0:18])
 
-		return accuracy
+		return accuracy, iou
 		
 		
 
 
 # load the image path
 print("[INFO] Loading up test image paths...")
-imagePaths = r"C:\Users\Alfred\Desktop\Importante\Licenta\TestSet\Test\Raw"
+imagePaths = r"C:\Users\Alfred\Desktop\Importante\Licenta\Visual Studio\CNN\TestSet\Test\Raw"
 
 # load our model from disk and flash it to the current device
 print("[INFO] Loading up model...")
@@ -127,13 +126,15 @@ unet = torch.load(config.MODEL_PATH).to(config.DEVICE)
 # Initialize the mean accuracy and the number of iterations
 count = 0
 mean_acc = 0
+mean_iou = 0
 # iterate over the randomly selected test image paths
 for path in os.scandir(imagePaths):
 	# make predictions and visualize the results
-	acc = make_predictions(unet, path)
+	acc, iou = make_predictions(unet, path)
 	mean_acc += acc
+	mean_iou += iou
 	count += 1
 	
 # print the mean accuracy
-print("The mean accuracy of the dataset is: {:.4f}".format(mean_acc/count))
+print("The mean accuracy of the dataset is: {:.4f} and the mean IoU is: {:.2f}".format(mean_acc/count,mean_iou/count))
 

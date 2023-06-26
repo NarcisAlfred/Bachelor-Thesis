@@ -16,9 +16,17 @@ temp_path = os.getcwd()+"\Temp"
 # set the device for processing
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# Define the model variable
+# Define variables
 model = None
 raw = None
+mask = None 
+predict = None
+pEDV = None
+pESV = None
+pEF = None
+aEDV = None
+aESV = None
+aEF = None
 
 # Define the title
 title = r"Echocardiography Segmentation"
@@ -51,9 +59,14 @@ file_list_column = [
 
 # Column that contains the name of the image and the images
 image_viewer_column = [
-    [gui.Image(key="imageRaw")],
-    [gui.Image(key="imageMask")],
-    [gui.Image(key="imagePredict")]
+    [gui.Button('Get Predicted EF',expand_x = True, key="bttnPredictEF"),gui.Button('Get Actual EF', expand_x = True, key="bttnActualEF")],
+    [gui.Text(f'Predicted EDV:{pEDV}', key="pEDV"),gui.Text(f'Predicted ESV:{pESV}', key="pESV"),gui.Text(f'Predicted EF:{pEF}',key="pEF")],
+    [gui.Text(f'Actual EDV:{aEDV}', key="aEDV"),gui.Text(f'Actual ESV:{aESV}',key="aESV"),gui.Text(f'Actual EF:{aEF}',key="aEF")],
+    [gui.HSeparator()],
+    [gui.Text('Raw Image',key='textRaw', visible = False), gui.Text('                 Ground Truth',key='textMask',visible = False), gui.Text('                 Predicted Mask',key='textPred',visible = False)],
+    [gui.Image(key="imageRaw"),
+    gui.Image(key="imageMask"),
+    gui.Image(key="imagePredict")]
 ]
 
 # Main Layout
@@ -117,11 +130,12 @@ while True:
                 image_raw = values["folderRaw"]+"/%s"%values["listRaw"][0]
                 image_cv2 = cv2.imread(image_raw) # read the image
                 image_cv2 = cv2.resize(image_cv2, (128,128)) # resize image
-                cv2.imwrite(temp_path+"\%s"%values["listRaw"][0]+".png", image_cv2) # convert image to .png
-                raw = temp_path+"\%s"%values["listRaw"][0]+".png" # get the new image path
+                cv2.imwrite(temp_path+"\%s"%values["listRaw"][0][0:-4]+".png", image_cv2) # convert image to .png
+                raw = temp_path+"\%s"%values["listRaw"][0][0:-4]+".png" # get the new image path
 
-                window["labelRaw"].update(values["listRaw"][0])
+                window["labelRaw"].update(values["listRaw"][0][0:11])
                 window["imageRaw"].update(filename=raw)
+                window["textRaw"].update(visible=True)
             except:
                 pass
 
@@ -131,10 +145,11 @@ while True:
                 image_mask = values["folderMask"]+"/%s"%values["listMask"][0]
                 image_cv2 = cv2.imread(image_mask) # read the image
                 image_cv2 = cv2.resize(image_cv2, (128,128)) # resize image
-                cv2.imwrite(temp_path+"\%s"%values["listMask"][0]+".png", image_cv2) # convert image to .png
-                mask = temp_path+"\%s"%values["listMask"][0]+".png" # get the new image path
+                cv2.imwrite(temp_path+"\%s"%values["listMask"][0][0:-4]+".png", image_cv2) # convert image to .png
+                mask = temp_path+"\%s"%values["listMask"][0][0:-4]+".png" # get the new image path
 
                 window["imageMask"].update(filename=mask)
+                window["textMask"].update(visible=True)
             except:
                 pass
         
@@ -179,12 +194,67 @@ while True:
                     
                     image_cv2 = cv2.resize(predMask, (128,128)) # resize the mask back
                     # Save the prediction temporary
-                    cv2.imwrite(temp_path+"\%s"%values["listRaw"][0]+"_predict.png", image_cv2) # convert image to .png
-                    predict = temp_path+"\%s"%values["listRaw"][0]+"_predict.png"
+                    cv2.imwrite(temp_path+"\%s"%values["listRaw"][0][0:-4]+"_predict.png", image_cv2) # convert image to .png
+                    predict = temp_path+"\%s"%values["listRaw"][0][0:-4]+"_predict.png"
 
                 # Update the predicted image
                 window["imagePredict"].Update(filename=predict)
+                window["textPred"].update(visible=True)
                 del unet
+
+        case "bttnPredictEF":
+            if raw is not None:
+                try:
+                    image_ED = cv2.imread(temp_path+"\%s"%values["listRaw"][0][0:11]+"_2CH_ED_predict.png",cv2.IMREAD_GRAYSCALE)
+                    img = cv2.resize(image_ED,(1102,669))
+                    _, binary_image = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+                    contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    pEDV = round(cv2.contourArea(contours[-1])*0.0027225,2)
+                except:
+                    gui.popup("End diastolic moment was not segmented or could not be found!")
+                try:
+                    image_ES = cv2.imread(temp_path+"\%s"%values["listRaw"][0][0:11]+"_2CH_ES_predict.png",cv2.IMREAD_GRAYSCALE)
+                    img = cv2.resize(image_ES,(1102,669))
+                    _, binary_image = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+                    contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    pESV = round(cv2.contourArea(contours[-1])*0.0027225,2)
+
+                    pEF = round(100*(pEDV-pESV)/pEDV,2)
+
+                    window["pEDV"].Update(value = f'Predicted EDV: {pEDV}mL') # Display the EDV
+                    window["pESV"].Update(value = f'Predicted ESV: {pESV}mL') # Display the ESV
+                    window["pEF"].Update(value = f'Predicted EF: {pEF}%') # Display the EF
+                except:
+                    gui.popup("End systolic moment was not segmented or could not be found")
+            else:
+                gui.popup("No image was selected for prediction!")
+
+        case "bttnActualEF":
+            if mask is not None:
+                try:
+                    image_ED = cv2.imread(temp_path+"\%s"%values["listRaw"][0][0:11]+"_2CH_ED_gt.png",cv2.IMREAD_GRAYSCALE)
+                    img = cv2.resize(image_ED,(1102,669))
+                    _, binary_image = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+                    contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    aEDV = round(cv2.contourArea(contours[-1])*0.0027225,2)
+                except:
+                    gui.popup("End diastolic moment was not segmented or could not be found!")
+                try:
+                    image_ES = cv2.imread(temp_path+"\%s"%values["listRaw"][0][0:11]+"_2CH_ES_gt.png",cv2.IMREAD_GRAYSCALE)
+                    img = cv2.resize(image_ES,(1102,669))
+                    _, binary_image = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+                    contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    aESV = round(cv2.contourArea(contours[-1])*0.0027225,2)
+
+                    aEF = round(100*(aEDV-aESV)/aEDV,2)
+
+                    window["aEDV"].Update(value = f'Actual EDV: {aEDV}mL') # Display the EDV
+                    window["aESV"].Update(value = f'Actual ESV: {aESV}mL') # Display the ESV
+                    window["aEF"].Update(value = f'Actual EF: {aEF}%') # Display the EF
+                except:
+                    gui.popup("End systolic moment was not segmented or could not be found")
+            else:
+                gui.popup("No mask was selected!")
 
         # Close the window
         case gui.WIN_CLOSED:

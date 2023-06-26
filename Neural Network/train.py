@@ -18,7 +18,6 @@ import time
 import os
 import numpy as np
 
-
 if __name__ == '__main__': 
 	# load the image and mask filepaths in a sorted manner
 	imagePaths = sorted(list(paths.list_images(config.IMAGE_DATASET_PATH)))
@@ -88,8 +87,7 @@ if __name__ == '__main__':
 			pred = unet(x)
 			loss = lossFunc(pred, y)
 
-			# first, zero out any previously accumulated gradients, then
-			# perform backpropagation, and then update model parameters
+			# first, zero out any previously accumulated gradients, then perform backpropagation, and then update model parameters
 			opt.zero_grad()
 			loss.backward()
 			opt.step()

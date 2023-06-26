@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib as plt
 
 directory = r"C:\Users\Alfred\Desktop\Importante\Licenta\database\testing"
-image_directory = r"C:\Users\Alfred\Desktop\Importante\Licenta\TestSet\Test"
+image_directory = r"C:\Users\Alfred\Desktop\Importante\Licenta\Dataset\Test"
 for subdir, dirs, files in os.walk(directory):
     count = 0
     for file in files:
@@ -88,5 +88,5 @@ for subdir, dirs, files in os.walk(directory):
             else:
                 img = img.convert("L")
                 img.save(image_directory + "\Raw\%s.jpg"%file[0:-4])
-        if(count == 4):
+        if(count == 4): #era 4 inainte
            break

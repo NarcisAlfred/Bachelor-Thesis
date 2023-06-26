@@ -19,7 +19,6 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Application\Executable.py" />
     <Compile Include="Application\MainWindow.pyw" />
     <Compile Include="Other Scripts\BuildExcel.py" />
     <Compile Include="Other Scripts\Convert_mdt_to_jpg.py" />
@@ -39,6 +38,7 @@
     <Compile Include="configuration\dataset.py" />
     <Compile Include="configuration\model.py" />
     <Compile Include="Neural Network\train.py" />
+    <Compile Include="Other Scripts\temp.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="dataset\train\Labeled\patient0001_2CH_ED_gt.jpg" />
